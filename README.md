@@ -1,5 +1,8 @@
 # my-pelmeni-bot
 
+Usage: 
+TELEGRAM_APITOKEN=$YOUR_TOKEN go run bot.go
+
 Command list:
 - create_order
 - add_item
