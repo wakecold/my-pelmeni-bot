@@ -9,6 +9,7 @@ import (
 	"github.com/wakecold/my-pelmeni-bot/internal/keyboards"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
+var bot *tgbotapi.BotAPI
 
 func main() {
 
@@ -16,7 +17,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
 	order := make(map[string]map[string]int)
 
 
@@ -42,19 +42,7 @@ func main() {
 		if update.CallbackQuery != nil {
 			data := update.CallbackQuery.Data
 			from := update.CallbackQuery.From.UserName
-			// bot.AnswerCallbackQuery(tgbotapi.NewCallback(update.CallbackQuery.ID, update.CallbackQuery.Data))
-
-			if len(order[from]) == 0 {
-				order[from] = make(map[string]int)
-				order[from][data] = 1
-			} else {
-				order[from][data] += 1
-			}
-
-			bot.Send(
-				tgbotapi.NewMessage(
-					update.CallbackQuery.Message.Chat.ID, fmt.Sprintf(
-						"Thank you for your order @%v", from)))
+			onUserClick(data, from, update)
 		}
 		if update.Message == nil {
 			continue
@@ -109,4 +97,10 @@ func main() {
 
 	}
 
+}
+
+func onUserClick(data string, from string, update tgbotapi.Update){
+	userID := update.CallbackQuery.Message.Chat.ID
+	msg := fmt.Sprintf("Thank you forr your order %s", from)
+	bot.Send(tgbotapi.NewMessage(userID, msg))
 }
