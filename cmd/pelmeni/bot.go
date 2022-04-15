@@ -9,7 +9,7 @@ import (
 	"github.com/wakecold/my-pelmeni-bot/internal/keyboards"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
-var todaysOrder = make(map[int64]string)
+var todaysOrder = make(map[string][]string)
 
 func main() {
 
@@ -101,10 +101,29 @@ func main() {
 }
 
 func onUserClick(bot *tgbotapi.BotAPI, data string, from string, chatID int64){
-
-	if _, ok := todaysOrder[123]; ok {
-		bot.Send(tgbotapi.NewMessage(chatID, "mb hz"))
+	cmdIndex, _ := strconv.Atoi(data)
+	if _, ok := todaysOrder[from]; ok {
+		if (cmdIndex <= 8){
+			todaysOrder[from][0] = data
+		}else if (cmdIndex <= 18){
+			todaysOrder[from][1] = data
+		}else{
+			todaysOrder[from][2] = data
+		}
 	}else{
-		bot.Send(tgbotapi.NewMessage(chatID, "no such key"))
+		if (cmdIndex <= 8){
+			todaysOrder[from] = append(todaysOrder[from], data)
+			todaysOrder[from] = append(todaysOrder[from], "")
+			todaysOrder[from] = append(todaysOrder[from], "")
+		}else if (cmdIndex <= 18){
+			todaysOrder[from] = append(todaysOrder[from], "")
+			todaysOrder[from] = append(todaysOrder[from], data)
+			todaysOrder[from] = append(todaysOrder[from], "")
+		}else{
+			todaysOrder[from] = append(todaysOrder[from], "")
+			todaysOrder[from] = append(todaysOrder[from], "")
+			todaysOrder[from] = append(todaysOrder[from], data)
+		}
 	}
+	fmt.Printf("----------%v\n", todaysOrder)
 }
