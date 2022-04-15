@@ -61,7 +61,7 @@ func main() {
 			itemsAndCount := make(map[string]int)
 			for _, val := range todaysOrder {
 				for _, itemId := range val {
-					if !strings.HasSuffix(itemId, "8") {
+					if !strings.HasSuffix(itemId, "8") && itemId != "" {
 						itemsAndCount[itemId] += 1
 					}
 				}
