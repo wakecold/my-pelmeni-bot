@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/wakecold/my-pelmeni-bot/internal/constants"
@@ -59,7 +60,9 @@ func main() {
 			itemsAndCount := make(map[string]int)
 			for _, val := range todaysOrder {
 				for _, itemId := range val {
-					itemsAndCount[itemId] += 1
+					if !strings.HasSuffix(itemId, "8") {
+						itemsAndCount[itemId] += 1
+					}
 				}
 			}
 
