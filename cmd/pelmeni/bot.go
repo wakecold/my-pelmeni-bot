@@ -12,6 +12,7 @@ import (
 )
 
 var todaysOrder = make(map[string][]string)
+var orderCreator int64
 
 func main() {
 
@@ -69,19 +70,23 @@ func main() {
 			}
 			msg.Text = countResult
 		case constants.Finish:
+			if update.Message.From.ID != orderCreator {
+				msg.Text = "Sorry, you are not order starter"
+			} else {
+				orderResult := "Thank you for your order. Your order is \n"
+				for user, val := range todaysOrder {
 
-			orderResult := "Thank you for your order. Your order is \n"
-			for user, val := range todaysOrder {
+					orderResult += user + " ordered: "
+					for _, itemId := range val {
+						orderResult += constants.Goods[itemId] + " "
+					}
 
-				orderResult += user + " ordered: "
-				for _, itemId := range val {
-					orderResult += constants.Goods[itemId] + " "
+					orderResult += "\n"
 				}
-
-				orderResult += "\n"
+				msg.Text = orderResult
 			}
-			msg.Text = orderResult
 		case constants.Create:
+			orderCreator = update.Message.From.ID
 			msg.Text = "SMALL PELMENI KEYBOARD"
 			msg.ReplyMarkup = keyboards.SmallPelmeniKeyboard
 
