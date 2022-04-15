@@ -5,10 +5,12 @@ import (
 	"log"
 	"os"
 	"strconv"
+
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/wakecold/my-pelmeni-bot/internal/constants"
 	"github.com/wakecold/my-pelmeni-bot/internal/keyboards"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
+
 var todaysOrder = make(map[string][]string)
 
 func main() {
@@ -17,9 +19,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	order := make(map[string]map[string]int)
-
-
 	// TODO: remove
 	bot.Debug = true
 	// Create a new UpdateConfig struct with an offset of 0. Offsets are used
@@ -55,15 +54,28 @@ func main() {
 
 		switch update.Message.Command() {
 		case constants.Print:
-			msg.Text = fmt.Sprintf("Current order is %v", order)
+			// collect all items and output items and count
+			itemsAndCount := make(map[string]int)
+			for _, val := range todaysOrder {
+				for _, itemId := range val {
+					itemsAndCount[itemId] += 1
+				}
+			}
+
+			countResult := "Current order is \n"
+			for itemId, amount := range itemsAndCount {
+				countResult += strconv.Itoa(amount) + "x " + constants.Goods[itemId]
+				countResult += "\n"
+			}
+			msg.Text = countResult
 		case constants.Finish:
 
 			orderResult := "Thank you for your order. Your order is \n"
-			for user, val := range order {
+			for user, val := range todaysOrder {
 
 				orderResult += user + " ordered: "
-				for itemId, amount := range val {
-					orderResult += strconv.Itoa(amount) + "x " + constants.Goods[itemId]
+				for _, itemId := range val {
+					orderResult += constants.Goods[itemId] + " "
 				}
 
 				orderResult += "\n"
@@ -100,26 +112,26 @@ func main() {
 
 }
 
-func onUserClick(bot *tgbotapi.BotAPI, data string, from string, chatID int64){
+func onUserClick(bot *tgbotapi.BotAPI, data string, from string, chatID int64) {
 	cmdIndex, _ := strconv.Atoi(data)
 	if _, ok := todaysOrder[from]; ok {
-		if (cmdIndex <= 8){
+		if cmdIndex <= 8 {
 			todaysOrder[from][0] = data
-		}else if (cmdIndex <= 18){
+		} else if cmdIndex <= 18 {
 			todaysOrder[from][1] = data
-		}else{
+		} else {
 			todaysOrder[from][2] = data
 		}
-	}else{
-		if (cmdIndex <= 8){
+	} else {
+		if cmdIndex <= 8 {
 			todaysOrder[from] = append(todaysOrder[from], data)
 			todaysOrder[from] = append(todaysOrder[from], "")
 			todaysOrder[from] = append(todaysOrder[from], "")
-		}else if (cmdIndex <= 18){
+		} else if cmdIndex <= 18 {
 			todaysOrder[from] = append(todaysOrder[from], "")
 			todaysOrder[from] = append(todaysOrder[from], data)
 			todaysOrder[from] = append(todaysOrder[from], "")
-		}else{
+		} else {
 			todaysOrder[from] = append(todaysOrder[from], "")
 			todaysOrder[from] = append(todaysOrder[from], "")
 			todaysOrder[from] = append(todaysOrder[from], data)
