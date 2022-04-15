@@ -14,6 +14,7 @@ import (
 
 var todaysOrder = make(map[string][]string)
 var orderCreator int64
+var isOrdering = false
 
 func main() {
 
@@ -80,6 +81,7 @@ func main() {
 			if update.Message.From.ID != orderCreator {
 				msg.Text = "Sorry, you are not order starter"
 			} else {
+				isOrdering = false
 				orderResult := "Thank you for your order. Your order is \n"
 				for user, val := range todaysOrder {
 
@@ -93,23 +95,28 @@ func main() {
 				msg.Text = orderResult
 			}
 		case constants.Create:
-			orderCreator = update.Message.From.ID
-			msg.Text = "SMALL PELMENI KEYBOARD"
-			msg.ReplyMarkup = keyboards.SmallPelmeniKeyboard
+			if isOrdering {
+				msg.Text = "Sorry, I am already taking order"
+			} else {
+				isOrdering = true
+				orderCreator = update.Message.From.ID
+				msg.Text = "SMALL PELMENI KEYBOARD"
+				msg.ReplyMarkup = keyboards.SmallPelmeniKeyboard
 
-			if _, err := bot.Send(msg); err != nil {
-				log.Panic(err)
+				if _, err := bot.Send(msg); err != nil {
+					log.Panic(err)
+				}
+
+				msg.Text = "BIG PELMENI KEYBOARD"
+				msg.ReplyMarkup = keyboards.BigPelmeniKeyboard
+
+				if _, err := bot.Send(msg); err != nil {
+					log.Panic(err)
+				}
+
+				msg.Text = "SAUCE KEYBOARD"
+				msg.ReplyMarkup = keyboards.SauceKeyboard
 			}
-
-			msg.Text = "BIG PELMENI KEYBOARD"
-			msg.ReplyMarkup = keyboards.BigPelmeniKeyboard
-
-			if _, err := bot.Send(msg); err != nil {
-				log.Panic(err)
-			}
-
-			msg.Text = "SAUCE KEYBOARD"
-			msg.ReplyMarkup = keyboards.SauceKeyboard
 		case constants.Yura:
 			msg.Text = "pidor"
 		default:
