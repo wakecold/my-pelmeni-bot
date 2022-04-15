@@ -66,12 +66,16 @@ func main() {
 				}
 			}
 
-			countResult := "Current order is \n"
-			for itemId, amount := range itemsAndCount {
-				countResult += strconv.Itoa(amount) + "x " + constants.Goods[itemId]
-				countResult += "\n"
+			if len(itemsAndCount) == 0 {
+				msg.Text = "Current order is empty"
+			} else {
+				countResult := "Current order is \n"
+				for itemId, amount := range itemsAndCount {
+					countResult += strconv.Itoa(amount) + "x " + constants.Goods[itemId]
+					countResult += "\n"
+				}
+				msg.Text = countResult
 			}
-			msg.Text = countResult
 		case constants.Finish:
 			if update.Message.From.ID != orderCreator {
 				msg.Text = "Sorry, you are not order starter"
