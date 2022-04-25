@@ -5,14 +5,18 @@ import (
 	"log"
 	"os"
 	"strconv"
-	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/wakecold/my-pelmeni-bot/internal/constants"
 	"github.com/wakecold/my-pelmeni-bot/internal/keyboards"
 )
 
-var todaysOrder = make(map[string][]string)
+// {
+//	userid: {
+// 			itemid: amount
+// 		}
+// }
+var todaysOrder = make(map[string]map[int]int)
 var orderCreator int64
 var isOrdering = false
 
@@ -39,13 +43,28 @@ func main() {
 
 	// Let's go through each update that we're getting from Telegram.
 	for update := range updates {
-
-		// Used to work with what user clicked on a keyboard
+		// This block is for work with what user clicked on a keyboard
 		if update.CallbackQuery != nil {
 			data := update.CallbackQuery.Data
 			from := update.CallbackQuery.From.UserName
 			chatID := update.CallbackQuery.Message.Chat.ID
-			onUserClick(bot, data, from, chatID)
+
+			itemId, _ := strconv.Atoi(data)
+			// if id = 99 user asked for his order
+			if itemId != 99 {
+				onUserClick(bot, data, from, chatID)
+			}
+			replyMessage := "Thank you! Your order is "
+			if itemId != 0 {
+				for item := range todaysOrder[from] {
+					replyMessage += constants.Goods[item] + " "
+				}
+			} else {
+				replyMessage += "empty"
+			}
+			callbackReply := tgbotapi.NewCallbackWithAlert(update.CallbackQuery.ID, replyMessage)
+			bot.Send(callbackReply)
+
 		}
 		if update.Message == nil {
 			continue
@@ -58,12 +77,10 @@ func main() {
 		switch update.Message.Command() {
 		case constants.Print:
 			// collect all items and output items and count
-			itemsAndCount := make(map[string]int)
-			for _, val := range todaysOrder {
-				for _, itemId := range val {
-					if !strings.HasSuffix(itemId, "8") && itemId != "" {
-						itemsAndCount[itemId] += 1
-					}
+			itemsAndCount := make(map[int]int)
+			for _, items := range todaysOrder {
+				for itemId, amount := range items {
+					itemsAndCount[itemId] += amount
 				}
 			}
 
@@ -93,6 +110,7 @@ func main() {
 					orderResult += "\n"
 				}
 				msg.Text = orderResult
+				// TODO: clear todaysOrder
 			}
 		case constants.Create:
 			if isOrdering {
@@ -116,6 +134,13 @@ func main() {
 
 				msg.Text = "SAUCE KEYBOARD"
 				msg.ReplyMarkup = keyboards.SauceKeyboard
+
+				if _, err := bot.Send(msg); err != nil {
+					log.Panic(err)
+				}
+
+				msg.Text = "USEFUL STUFF"
+				msg.ReplyMarkup = keyboards.ResetOrderKeyboard
 			}
 		case constants.Yura:
 			msg.Text = "pidor"
@@ -139,28 +164,17 @@ func main() {
 }
 
 func onUserClick(bot *tgbotapi.BotAPI, data string, from string, chatID int64) {
-	cmdIndex, _ := strconv.Atoi(data)
-	if _, ok := todaysOrder[from]; ok {
-		if cmdIndex <= 8 {
-			todaysOrder[from][0] = data
-		} else if cmdIndex <= 18 {
-			todaysOrder[from][1] = data
-		} else {
-			todaysOrder[from][2] = data
-		}
+	itemId, _ := strconv.Atoi(data)
+	if itemId == 0 {
+		// empty users order
+		todaysOrder[from] = make(map[int]int)
 	} else {
-		if cmdIndex <= 8 {
-			todaysOrder[from] = append(todaysOrder[from], data)
-			todaysOrder[from] = append(todaysOrder[from], "")
-			todaysOrder[from] = append(todaysOrder[from], "")
-		} else if cmdIndex <= 18 {
-			todaysOrder[from] = append(todaysOrder[from], "")
-			todaysOrder[from] = append(todaysOrder[from], data)
-			todaysOrder[from] = append(todaysOrder[from], "")
+		// check if user ordered before
+		if _, ok := todaysOrder[from]; ok {
+			todaysOrder[from][itemId] += 1
 		} else {
-			todaysOrder[from] = append(todaysOrder[from], "")
-			todaysOrder[from] = append(todaysOrder[from], "")
-			todaysOrder[from] = append(todaysOrder[from], data)
+			todaysOrder[from] = make(map[int]int)
+			todaysOrder[from][itemId] = 1
 		}
 	}
 	fmt.Printf("----------%v\n", todaysOrder)
