@@ -54,14 +54,17 @@ func main() {
 			if itemId != 99 {
 				onUserClick(bot, data, from, chatID)
 			}
+
 			replyMessage := "Thank you! Your order is "
-			if itemId > 0 && itemId < 99 {
+
+			if itemId != 0 && len(todaysOrder[from]) != 0 {
 				for item := range todaysOrder[from] {
 					replyMessage += constants.Goods[item] + " "
 				}
 			} else {
 				replyMessage += "empty"
 			}
+
 			callbackReply := tgbotapi.NewCallbackWithAlert(update.CallbackQuery.ID, replyMessage)
 			bot.Send(callbackReply)
 
