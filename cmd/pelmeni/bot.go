@@ -55,7 +55,7 @@ func main() {
 				onUserClick(bot, data, from, chatID)
 			}
 			replyMessage := "Thank you! Your order is "
-			if itemId != 0 {
+			if itemId > 0 && itemId < 99 {
 				for item := range todaysOrder[from] {
 					replyMessage += constants.Goods[item] + " "
 				}
