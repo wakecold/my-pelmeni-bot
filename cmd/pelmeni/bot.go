@@ -55,11 +55,11 @@ func main() {
 				onUserClick(bot, data, from, chatID)
 			}
 
-			replyMessage := "Thank you! Your order is "
+			replyMessage := "Thank you! Your order is: \n"
 
 			if itemId != 0 && len(todaysOrder[from]) != 0 {
-				for item := range todaysOrder[from] {
-					replyMessage += constants.Goods[item] + " "
+				for item, amount := range todaysOrder[from] {
+					replyMessage += strconv.Itoa(amount) + "x " + constants.Goods[item] + " \n"
 				}
 			} else {
 				replyMessage += "empty"
@@ -106,8 +106,8 @@ func main() {
 				for user, val := range todaysOrder {
 
 					orderResult += user + " ordered: "
-					for _, itemId := range val {
-						orderResult += constants.Goods[itemId] + " "
+					for itemId, amount := range val {
+						orderResult += strconv.Itoa(amount) + "x " + constants.Goods[itemId]
 					}
 
 					orderResult += "\n"
