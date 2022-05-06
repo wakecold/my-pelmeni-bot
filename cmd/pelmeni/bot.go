@@ -79,24 +79,7 @@ func main() {
 
 		switch update.Message.Command() {
 		case constants.Print:
-			// collect all items and output items and count
-			itemsAndCount := make(map[int]int)
-			for _, items := range todaysOrder {
-				for itemId, amount := range items {
-					itemsAndCount[itemId] += amount
-				}
-			}
-
-			if len(itemsAndCount) == 0 {
-				msg.Text = "Current order is empty"
-			} else {
-				countResult := "Current order is \n"
-				for itemId, amount := range itemsAndCount {
-					countResult += strconv.Itoa(amount) + "x " + constants.Goods[itemId]
-					countResult += "\n"
-				}
-				msg.Text = countResult
-			}
+			msg.Text = getPrintMessage(todaysOrder)
 		case constants.Finish:
 			if update.Message.From.ID != orderCreator {
 				msg.Text = "Sorry, you are not order starter"
@@ -107,13 +90,20 @@ func main() {
 
 					orderResult += user + " ordered: "
 					for itemId, amount := range val {
-						orderResult += strconv.Itoa(amount) + "x " + constants.Goods[itemId]
+						orderResult += strconv.Itoa(amount) + "x " + constants.Goods[itemId] + " "
 					}
 
 					orderResult += "\n"
 				}
 				msg.Text = orderResult
 				// TODO: clear todaysOrder
+
+				if _, err := bot.Send(msg); err != nil {
+					log.Panic(err)
+				}
+
+				msg.Text = getPrintMessage(todaysOrder)
+
 			}
 		case constants.Create:
 			if isOrdering {
@@ -180,4 +170,28 @@ func onUserClick(bot *tgbotapi.BotAPI, data string, from string, chatID int64) {
 		}
 	}
 	fmt.Printf("----------%v\n", todaysOrder)
+}
+
+func getPrintMessage(todaysOrder map[string]map[int]int) string {
+	var result string
+	// collect all items and output items and count
+	itemsAndCount := make(map[int]int)
+	for _, items := range todaysOrder {
+		for itemId, amount := range items {
+			itemsAndCount[itemId] += amount
+		}
+	}
+
+	if len(itemsAndCount) == 0 {
+		result = "Current order is empty"
+	} else {
+		countResult := "Current order is \n"
+		for itemId, amount := range itemsAndCount {
+			countResult += strconv.Itoa(amount) + "x " + constants.Goods[itemId]
+			countResult += "\n"
+		}
+		result = countResult
+	}
+
+	return result
 }
