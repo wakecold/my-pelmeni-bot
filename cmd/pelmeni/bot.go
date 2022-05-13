@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sort"
 	"strconv"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -152,8 +153,10 @@ func main() {
 			// do nothing
 		}
 
-		if _, err := bot.Send(msg); err != nil {
-			log.Panic(err)
+		if len(msg.Text) > 0 {
+			if _, err := bot.Send(msg); err != nil {
+				log.Panic(err)
+			}
 		}
 
 	}
@@ -186,6 +189,18 @@ func getPrintMessage(todaysOrder map[string]map[int]int) string {
 			itemsAndCount[itemId] += amount
 		}
 	}
+
+	orderSorted := make([]int, len(itemsAndCount))
+
+	i := 0
+	for k := range itemsAndCount {
+		orderSorted[i] = k
+		i++
+	}
+
+	sort.Ints(orderSorted)
+
+	fmt.Println(orderSorted)
 
 	if len(itemsAndCount) == 0 {
 		result = "Current order is empty"
