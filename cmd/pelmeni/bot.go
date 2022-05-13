@@ -50,19 +50,24 @@ func main() {
 			chatID := update.CallbackQuery.Message.Chat.ID
 
 			itemId, _ := strconv.Atoi(data)
-			// if id = 99 user asked for his order
-			if itemId != 99 {
-				onUserClick(bot, data, from, chatID)
-			}
+			var replyMessage string
+			if isOrdering {
+				// if id = 99 user asked for his order
+				if itemId != 99 {
+					onUserClick(bot, data, from, chatID)
+				}
 
-			replyMessage := "Thank you! Your order is: \n"
+				replyMessage = "Thank you! Your order is: \n"
 
-			if itemId != 0 && len(todaysOrder[from]) != 0 {
-				for item, amount := range todaysOrder[from] {
-					replyMessage += strconv.Itoa(amount) + "x " + constants.Goods[item] + " \n"
+				if itemId != 0 && len(todaysOrder[from]) != 0 {
+					for item, amount := range todaysOrder[from] {
+						replyMessage += strconv.Itoa(amount) + "x " + constants.Goods[item] + " \n"
+					}
+				} else {
+					replyMessage += "empty"
 				}
 			} else {
-				replyMessage += "empty"
+				replyMessage = "Sorry, order is finished!"
 			}
 
 			callbackReply := tgbotapi.NewCallbackWithAlert(update.CallbackQuery.ID, replyMessage)
