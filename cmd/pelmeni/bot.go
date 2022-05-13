@@ -144,7 +144,7 @@ func main() {
 			3. Бот агрегирует заказ
 			4. Ура, пельмени`
 		default:
-			msg.Text = "I don't know that command"
+			// do nothing
 		}
 
 		if _, err := bot.Send(msg); err != nil {
