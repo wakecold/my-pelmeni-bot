@@ -11,3 +11,5 @@ Command list:
 
 TODO:
 - add db
+- parse avaliable products
+- add prices
